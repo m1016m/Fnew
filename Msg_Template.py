@@ -27,6 +27,7 @@ def stock_reply_rate():
                             ))
     return text_message
 
+# 幣別種類Button
 def show_Button():
     flex_message = FlexSendMessage(
             alt_text="幣別種類",
@@ -328,72 +329,6 @@ def show_Button():
     )
     return flex_message
 
-# 股票技術面分析
-def stock_tec_analysis(stockNumber):
-    flex_message = FlexSendMessage(
-            alt_text="stock_tec_analysis",
-            contents={
-                    "type": "bubble",
-                    "hero": {
-                        "type": "image",
-                        "url": "https://i.imgur.com/2WUTjOE.jpg",
-                        "size": "full",
-                        "aspectRatio": "20:13",
-                        "aspectMode": "cover",
-                    },
-                    "body": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "contents": [
-                        {
-                            "type": "text",
-                            "text": "股票匯率一把抓🛅",
-                            "weight": "bold",
-                            "size": "xl",
-                        }
-                        ]
-                    },
-                    "footer": {
-                        "type": "box",
-                        "layout": "vertical",
-                        "spacing": "sm",
-                        "contents": [
-                        {
-                            "type": "button",
-                            "style": "link",
-                            "height": "sm",
-                            "action": {
-                            "type": "message",
-                            "label": "股票K線圖💹",
-                            "text": "@K" + stockNumber
-                            }
-                        },
-                        {
-                            "type": "button",
-                            "action": {
-                            "type": "message",
-                            "label": "即時股價💹",
-                            "text": "#"+stockNumber 
-                            }
-                        },
-                        {
-                            "type": "button",
-                            "style": "link",
-                            "height": "sm",
-                            "action": {
-                            "type": "message",
-                            "label": "想知道匯率🏢",
-                            "text": "想知道匯率"
-                            }
-                        }
-                        ],
-                        "flex": 0,
-                        "margin": "none"
-                    }
-            }
-    )
-    return flex_message
-
 # 理財頻道
 def youtube_channel():
     flex_message = FlexSendMessage(
@@ -641,6 +576,7 @@ def youtube_channel():
         )
     return flex_message
 
+
 def realtime_currency_other(currency):
     content = "想知道更多?"
     text_message = TextSendMessage(
@@ -671,6 +607,70 @@ def realtime_currency_other(currency):
                                                     text="N外匯"+currency,
                                                 )
                                        )
+                                ]
+                            ))
+    return text_message
+
+def stock_reply_other(stockNumber):
+    content_text = "想知道更多?"
+    text_message = TextSendMessage(
+                                text = content_text ,
+                               quick_reply=QuickReply(
+                                   items=[
+                                       QuickReplyButton(
+                                                action=MessageAction(
+                                                    label="即時股價", 
+                                                    text="#"+stockNumber,
+                                                )
+                                       ),
+                                       QuickReplyButton(
+                                                action=MessageAction(
+                                                    label="關注", 
+                                                    text="關注"+stockNumber,
+                                                )
+                                       ),
+                                       QuickReplyButton(
+                                                action=MessageAction(
+                                                    label="取消關注", 
+                                                    text="刪除"+stockNumber,
+                                                )
+                                       ),
+                                        QuickReplyButton(
+                                                action=MessageAction(
+                                                    label="走勢圖", 
+                                                    text="P"+stockNumber,
+                                                )
+                                       ),
+                                       QuickReplyButton(
+                                                action=MessageAction(
+                                                    label="K線圖", 
+                                                    text="K"+stockNumber
+                                                )
+                                       ),
+                                       QuickReplyButton(
+                                                action=MessageAction(
+                                                    label="法人", 
+                                                    text="F"+stockNumber
+                                                )
+                                       ),
+                                       QuickReplyButton(
+                                                action=MessageAction(
+                                                    label="三大面向分析", 
+                                                    text= "三大面向分析"+stockNumber
+                                                )
+                                       ),
+                                       QuickReplyButton(
+                                                action=MessageAction(
+                                                    label="新聞", 
+                                                    text= "N"+stockNumber
+                                                )
+                                       ),
+                                       QuickReplyButton(
+                                                action=MessageAction(
+                                                    label="年收益率", 
+                                                    text= "收益率" + stockNumber
+                                                )
+                                       ),
                                 ]
                             ))
     return text_message
