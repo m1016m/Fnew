@@ -6,10 +6,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
 import Imgur
-from matplotlib.font_manager import FontProperties # 設定字體
-chinese_font = matplotlib.font_manager.FontProperties(fname='msjh.ttf') # 引入同個資料夾下支援中文字檔
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
+
+from matplotlib.font_manager import FontProperties # 設定字體
+chinese_font = matplotlib.font_manager.FontProperties(fname='msjh.ttf') # 引入同個資料夾下支援中文字檔
+
 def getCurrencyName(currency):
     currency_list = { 
         "USD" : "美元",
@@ -34,25 +36,6 @@ def getCurrencyName(currency):
     try: currency_name = currency_list[currency]
     except: return "無可支援的外幣"
     return currency_name
-
-def getExchangeRate(msg): # 不同貨幣直接換算(非只限於台幣)
-    """
-    sample
-    code = '換匯USD/TWD/100;
-    code = '換匯USD/JPY/100'
-    """
-    currency_list = msg[2:].split("/")
-    currency = currency_list[0] # 輸入想查詢的匯率
-    currency1 = currency_list[1] # 輸入想兌換的匯率
-    money_value = currency_list[2] # 輸入金額數值
-    url_coinbase = 'https://api.coinbase.com/v2/exchange-rates?currency=' + currency
-    res = requests.get(url_coinbase)
-    jData = res.json()
-    pd_currency = jData['data']['rates']
-    content = f'目前的兌換率為:{pd_currency[currency1]} {currency1} \n查詢的金額為: '
-    amount =  float(pd_currency[currency1]) 
-    content += str('%.2f' % (amount * float(money_value))) + " " +currency1
-    return content
 # 查詢匯率
 def showCurrency(code) -> "JPY": # code 為外幣代碼
     content = ""
@@ -71,6 +54,25 @@ def showCurrency(code) -> "JPY": # code 為外幣代碼
     # 銀行即期賣出價格
     sold_spot = "無資料" if currency[4] == '-' else str(float(currency[4])) 
     content +=  f"{currency_name} 最新掛牌時間為: {now_time}\n ---------- \n 現金買入價格: {buying_cash}\n 現金賣出價格: {sold_cash}\n 即期買入價格: {buying_spot}\n 即期賣出價格: {sold_spot}\n \n"
+    return content
+
+def getExchangeRate(msg): # 不同貨幣直接換算(非只限於台幣)
+    """
+    sample
+    code = '換匯USD/TWD/100;
+    code = '換匯USD/JPY/100'
+    """
+    currency_list = msg[2:].split("/")
+    currency = currency_list[0] # 輸入想查詢的匯率
+    currency1 = currency_list[1] # 輸入想兌換的匯率
+    money_value = currency_list[2] # 輸入金額數值
+    url_coinbase = 'https://api.coinbase.com/v2/exchange-rates?currency=' + currency
+    res = requests.get(url_coinbase)
+    jData = res.json()
+    pd_currency = jData['data']['rates']
+    content = f'目前的兌換率為:{pd_currency[currency1]} {currency1} \n查詢的金額為: '
+    amount =  float(pd_currency[currency1]) 
+    content += str('%.2f' % (amount * float(money_value))) + " " +currency1
     return content
 #  現金匯率
 def cash_exrate_sixMonth(code1) -> "USA":
@@ -91,6 +93,7 @@ def cash_exrate_sixMonth(code1) -> "USA":
     plt.show()
     plt.close()
     return Imgur.showImgur(code1)
+
 ##--------------------------------------------
 #######     走勢圖
 #   即期匯率
