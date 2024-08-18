@@ -14,6 +14,7 @@ import Msg_Template
 import EXRate
 import mongodb
 import twder
+import stockprice
 
 app = Flask(__name__)
 IMGUR_CLIENT_ID = '2a5690ab2c44302'
