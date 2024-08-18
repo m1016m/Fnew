@@ -35,14 +35,62 @@ currencyDB = 'users'
 dbname = 'test-good1'
 
 def constructor_stock(): 
-    client = MongoClient("mongodb://m1016m:Meng0614@cluster0-shard-00-00.6pily.mongodb.net:27017,cluster0-shard-00-01.6pily.mongodb.net:27017,cluster0-shard-00-02.6pily.mongodb.net:27017/?ssl=true&replicaSet=atlas-zpa720-shard-0&authSource=admin&retryWrites=true&w=majority&appName=Cluster0")
+    client = MongoClient("mongodb://m1016m:Meng0614@cluster0-shard-00-00.6pily.mongodb.net:27017,cluster0-shard-00-01.6pily.mongodb.net:27017,cluster0-shard-00-02.6pily.mongodb.net:27017/?ssl=true&replicaSet=atlas-zpa720-shard-0&authSource=admin&retryWrites=true&w=majority")
     db = client[stockDB]
     return db
 
 def constructor_currency():
-    client = MongoClient("mongodb://m1016m:Meng0614@cluster0-shard-00-00.6pily.mongodb.net:27017,cluster0-shard-00-01.6pily.mongodb.net:27017,cluster0-shard-00-02.6pily.mongodb.net:27017/?ssl=true&replicaSet=atlas-zpa720-shard-0&authSource=admin&retryWrites=true&w=majority&appName=Cluster0")
+    client = MongoClient("mongodb://m1016m:Meng0614@cluster0-shard-00-00.6pily.mongodb.net:27017,cluster0-shard-00-01.6pily.mongodb.net:27017,cluster0-shard-00-02.6pily.mongodb.net:27017/?ssl=true&replicaSet=atlas-zpa720-shard-0&authSource=admin&retryWrites=true&w=majority")
     db = client[currencyDB]
     return db
+
+#----------------------------  新增匯率至匯率清單  --------------------------
+def write_my_currency(userID , user_name, currency, condition, target_price):
+    db = constructor_currency()
+    collect = db[user_name]
+    is_exit = collect.find_one({"favorite_currency": currency})
+    content = ""
+    if is_exit != None : return update_my_currency(user_name, currency, condition , target_price)
+    else:
+        collect.insert_one({
+                "userID": userID,
+                "favorite_currency": currency,
+                "condition" :  condition,
+                "price" : target_price,
+                "tag": "currency",
+                "date_info": datetime.datetime.now()
+            })
+        return f"{currency_list[currency]}已新增至您的外幣清單"
+#----------------------------  更新匯率清單的匯率  --------------------------
+def update_my_currency(user_name, currency, condition , target_price):
+    db=constructor_currency()
+    collect = db[user_name]
+    collect.update_many({"favorite_currency": currency }, {'$set': {'condition':condition , "price": target_price}})
+    return f"{currency_list[currency]}更新成功"
+#----------------------------  查詢資料庫中匯率清單的匯率(文字)  --------------------------
+def show_my_currency(userID, user_name):
+    db = constructor_currency()
+    collect = db[user_name]
+    dataList = list(collect.find({"userID": userID}))
+    if dataList == []: return "您的外幣清單為空，請透過指令新增外幣至清單中"
+    content = ""
+    for i in range(len(dataList)):
+        content += EXRate.showCurrency(dataList[i]["favorite_currency"]) 
+    return content
+# ----------------  刪除使用者清單特定的匯率       ----------------
+def delete_my_currency(user_name, currency):
+    db = constructor_currency()
+    collect = db[user_name]
+    collect.delete_one({'favorite_currency': currency})
+    return currency_list[currency] + "刪除成功"
+
+
+#----------------------------  刪除匯率清單全部匯率  --------------------------
+def delete_my_allcurrency(user_name, userID):
+    db = constructor_currency()
+    collect = db[user_name]
+    collect.delete_many({'userID': userID})
+    return "外幣清單已清空"
 
 #   -----------    新增使用者的股票       -------------
 def write_my_stock(userID, user_name, stockNumber, condition , target_price):
@@ -93,51 +141,3 @@ def delete_my_allstock(user_name, userID):
     collect = db[user_name]
     collect.delete_many({'userID': userID})
     return "全部股票刪除成功"
-#----------------------------  更新匯率清單的匯率  --------------------------
-def update_my_currency(user_name, currency, condition , target_price):
-    db=constructor_currency()
-    collect = db[user_name]
-    collect.update_many({"favorite_currency": currency }, {'$set': {'condition':condition , "price": target_price}})
-    return f"{currency_list[currency]}更新成功"
-#----------------------------  新增匯率至匯率清單  --------------------------
-def write_my_currency(userID , user_name, currency, condition, target_price):
-    db = constructor_currency()
-    collect = db[user_name]
-    is_exit = collect.find_one({"favorite_currency": currency})
-    content = ""
-    if is_exit != None : return update_my_currency(user_name, currency, condition , target_price)
-    else:
-        collect.insert_one({
-                "userID": userID,
-                "favorite_currency": currency,
-                "condition" :  condition,
-                "price" : target_price,
-                "tag": "currency",
-                "date_info": datetime.datetime.now()
-            })
-        return f"{currency_list[currency]}已新增至您的外幣清單"
-    
-#----------------------------  查詢資料庫中匯率清單的匯率(文字)  --------------------------
-def show_my_currency(userID, user_name):
-    db = constructor_currency()
-    collect = db[user_name]
-    dataList = list(collect.find({"userID": userID}))
-    if dataList == []: return "您的外幣清單為空，請透過指令新增外幣至清單中"
-    content = ""
-    for i in range(len(dataList)):
-        content += EXRate.showCurrency(dataList[i]["favorite_currency"]) 
-    return content
-# ----------------  刪除使用者清單特定的匯率       ----------------
-def delete_my_currency(user_name, currency):
-    db = constructor_currency()
-    collect = db[user_name]
-    collect.delete_one({'favorite_currency': currency})
-    return currency_list[currency] + "刪除成功"
-
-
-#----------------------------  刪除匯率清單全部匯率  --------------------------
-def delete_my_allcurrency(user_name, userID):
-    db = constructor_currency()
-    collect = db[user_name]
-    collect.delete_many({'userID': userID})
-    return "外幣清單已清空"

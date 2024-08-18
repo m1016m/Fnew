@@ -23,6 +23,7 @@ client_secret = '3eb5a0d648a492944f1748b4a9614a3a59bbe7c1'
 album_id = 'zV0K1Ch'
 access_token = '96101a97afcea12b51b4c9c7a42f9e961bc38513'
 refresh_token = 'efdc4440c8cc008113a964a6629db78825306084'
+
 def showImgur(fileName):
         # connect imgur
         client= ImgurClient(client_id, client_secret, access_token, refresh_token)
