@@ -331,7 +331,7 @@ def handle_message(event):
                             ),
                             URIAction(
                                 label='粉絲團',
-                                uri='https://zh-tw.facebook.com/lccnet10/'
+                                uri='https://liff.line.me/2006101176-kpER9pEB'
                             )
                         ]
                     ),
