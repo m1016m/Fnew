@@ -26,7 +26,33 @@ def stock_reply_rate():
                                 ]
                             ))
     return text_message
-
+def stock_reply_other(stockNumber):
+    content_text = "分析趨勢圖"
+    text_message = TextSendMessage(
+                                text = content_text ,
+                               quick_reply=QuickReply(
+                                   items=[
+                                       QuickReplyButton(
+                                                action=MessageAction(
+                                                    label="即時股價", 
+                                                    text="#"+stockNumber,
+                                                )
+                                       ),
+                                       QuickReplyButton(
+                                                action=MessageAction(
+                                                    label="匯率圖", 
+                                                    text="CT"+stockNumber,
+                                                )
+                                       ),
+                                       QuickReplyButton(
+                                                action=MessageAction(
+                                                    label="K線圖", 
+                                                    text="@K"+stockNumber
+                                                )
+                                       ),
+                                       ]
+                            ))
+    return text_message
 # 幣別種類Button
 def show_Button():
     flex_message = FlexSendMessage(
