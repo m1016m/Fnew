@@ -147,7 +147,30 @@ def oil_price():
     cpc = soup.select('#cpc')[0].text.replace(' ', '')
     content = '{}\n{}{}'.format(title, gas_price, cpc)
     return content
-
+# 地震資訊函式
+def earth_quake():
+    # 預設回傳的訊息
+    msg = ['找不到地震資訊','https://example.com/demo.jpg']
+    try:
+        code = 'CWA-C07BDC7E-7138-4068-BCEC-13C15865812A'
+        url = f'https://opendata.cwb.gov.tw/api/v1/rest/datastore/E-A0016-001?Authorization={code}'
+        # 爬取地震資訊網址
+        e_data = requests.get(url)
+        # json 格式化訊息內容
+        e_data_json = e_data.json()
+        # 取出地震資訊
+        eq = e_data_json['records']['earthquake']
+        for i in eq:
+            loc = i['earthquakeInfo']['epiCenter']['location']       # 地震地點
+            val = i['earthquakeInfo']['magnitude']['magnitudeValue'] # 地震規模
+            dep = i['earthquakeInfo']['depth']['value']              # 地震深度
+            eq_time = i['earthquakeInfo']['originTime']              # 地震時間
+            img = i['reportImageURI']                                # 地震圖
+            msg = [f'{loc}，芮氏規模 {val} 級，深度 {dep} 公里，發生時間 {eq_time}。', img]
+            break     # 取出第一筆資料後就 break
+        return msg    # 回傳 msg
+    except:
+        return msg    # 如果取資料有發生錯誤，直接回傳 msg
 
 # 監聽所有來自 /callback 的 Post Request
 @app.route("/callback", methods=['POST'])
@@ -179,14 +202,14 @@ def callback():
                 if text == '雷達回波圖' or text == '雷達回波':
                     # 傳送雷達回波圖 ( 加上時間戳記 )
                     reply_image(f'https://cwbopendata.s3.ap-northeast-1.amazonaws.com/MSC/O-A0058-003.png?{time.time_ns()}', reply_token, access_token)
-                # # 如果是地震相關的文字
-                # elif text == '地震資訊' or text == '地震':
-                #     # 爬取地震資訊
-                #     msg = earth_quake()
-                #     # 傳送地震資訊 ( 用 push 方法，因為 reply 只能用一次 )
-                #     push_message(msg[0], user_id, access_token)
-                #     # 傳送地震圖片 ( 用 reply 方法 )
-                #     reply_image(msg[1], reply_token, access_token)
+                # 如果是地震相關的文字
+                elif text == '地震資訊' or text == '地震':
+                    # 爬取地震資訊
+                    msg = earth_quake()
+                    # 傳送地震資訊 ( 用 push 方法，因為 reply 只能用一次 )
+                    reply_message(msg[0], user_id, access_token)
+                    # 傳送地震圖片 ( 用 reply 方法 )
+                    reply_image(msg[1], reply_token, access_token)
                 else:
                     # 如果是一般文字，直接回覆同樣的文字
                     reply_message(text, reply_token, access_token)     
