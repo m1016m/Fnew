@@ -37,7 +37,7 @@ def earth_quake():
     msg = ['找不到地震資訊','https://example.com/demo.jpg']
     try:
         code = 'CWA-C07BDC7E-7138-4068-BCEC-13C15865812A'#你的氣象資料授權碼
-        url = f'https://opendata.cwb.gov.tw/api/v1/rest/datastore/E-A0016-001?Authorization={code}'
+        url = f'https://opendata.cwb.gov.tw/api/v1/rest/datastore/E-A0015-001?Authorization={code}'
         # 爬取地震資訊網址
         e_data = requests.get(url)
         # json 格式化訊息內容
