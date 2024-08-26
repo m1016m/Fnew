@@ -524,7 +524,14 @@ def handle_message(event):
             schedule.run_pending()
             time.sleep(1)
     
-    
+    #＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊weather＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊#
+    # 圖文選單
+    # 第一層-最新氣象->4格圖片Flex Message
+    if re.match('最新氣象|查詢天氣|天氣查詢|weather|Weather',emsg):
+        content=place.img_Carousel()  #呼叫4格圖片Flex Message
+        line_bot_api.reply_message(event.reply_token,content)
+        check_stor()
+        return 0
 
 import os
 if __name__ == "__main__":
