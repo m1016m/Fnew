@@ -15,10 +15,15 @@ import EXRate
 import mongodb
 import twder
 import stockprice
+#======這裡是呼叫的檔案內容=====
+# 載入 json 標準函式庫，處理回傳的資料格式
+import requests, json, time
+#======這裡是呼叫的檔案內容=====
 
 app = Flask(__name__)
 IMGUR_CLIENT_ID = '2a5690ab2c44302'
-
+access_token = 'jIdH9Ta/KYSrc3bfb8HpD5aG9FpRyLU+b0uZZ9/q8ckCjSF0gEaqBd0dlNN375WoaSKQZiCD/cf1oNSZvc1UgBbtMa5rr2r9BVjvrulw9VA38+EN3vadpe+jMz4QM9tt80IH3rdLTVAneVJ3QPMz6AdB04t89/1O/w1cDnyilFU='
+channel_secret = '827fe25e726242685799d486978af9cc'
 # 這段主要在畫K線圖
 # pip3 install pyimgur
 import yfinance as yf
@@ -55,7 +60,19 @@ def plot_stock_k_chart(IMGUR_CLIENT_ID, stock="0050", date_from='2020-01-01'):
     except Exception as e:
         print(f"错误: {e}")
         return None
-
+# LINE 回傳圖片函式
+def reply_image(msg, rk, token):
+    headers = {'Authorization':f'Bearer {token}','Content-Type':'application/json'}
+    body = {
+    'replyToken':rk,
+    'messages':[{
+          'type': 'image',
+          'originalContentUrl': msg,
+          'previewImageUrl': msg
+        }]
+    }
+    req = requests.request('POST', 'https://api.line.me/v2/bot/message/reply', headers=headers,data=json.dumps(body).encode('utf-8'))
+    print(req.text)
 # 抓使用者設定它關心的匯率
 def cache_users_currency():
     db=mongodb.constructor_currency()
@@ -108,6 +125,7 @@ def oil_price():
     content = '{}\n{}{}'.format(title, gas_price, cpc)
     return content
 
+
 # 監聽所有來自 /callback 的 Post Request
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -121,10 +139,31 @@ def callback():
     # handle webhook body
     try:
         handler.handle(body, signature)
+        # 轉換內容為 json 格式
+        json_data = json.loads(body)
+        # 取得回傳訊息的 Token ( reply message 使用 )
+        reply_token = json_data['events'][0]['replyToken']
+        # 取得使用者 ID ( push message 使用 )
+        user_id = json_data['events'][0]['source']['userId']
+        print(json_data)
+        # 如果傳送的是 message
+        if 'message' in json_data['events'][0]:
+            # 如果 message 的類型是文字 text
+            if json_data['events'][0]['message']['type'] == 'text':
+                # 取出文字
+                text = json_data['events'][0]['message']['text']
+                # 如果是雷達回波圖相關的文字
+                if text == '雷達回波圖' or text == '雷達回波':
+                    # 傳送雷達回波圖 ( 加上時間戳記 )
+                    reply_image(f'https://cwbopendata.s3.ap-northeast-1.amazonaws.com/MSC/O-A0058-003.png?{time.time_ns()}', reply_token, access_token)
+                else:
+                    # 如果是一般文字，直接回覆同樣的文字 
+                    reply_message(text, reply_token, access_token)
     except InvalidSignatureError:
         abort(400)
 
     return 'OK'
+
 # 處理訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -136,6 +175,8 @@ def handle_message(event):
     usespeak=str(event.message.text) #使用者講的話
     uid = profile.user_id #使用者ID
     user_name = profile.display_name #使用者名稱
+
+    msg = event.message.text
     
     ######################## 匯率區 ##############################################    
     if re.match("匯率大小事", msg):
@@ -482,11 +523,13 @@ def handle_message(event):
         while True: 
             schedule.run_pending()
             time.sleep(1)
-
+    
+    
 
 import os
 if __name__ == "__main__":
     app.run()
+
 
 #https://opendata.cwb.gov.tw/index
 #CWA-C07BDC7E-7138-4068-BCEC-13C15865812A
