@@ -563,7 +563,7 @@ def handle_message(event):
     if event.message.text.endswith('即時天氣'): #if結尾=即時天氣
         mat_d[uid]='即時天氣'
         content=place.select_city(mat_d[uid])             #呼叫全台縣市選單-22個
-        line_bot_api.reply_message(event.reply_token,content) #ex:高雄市->請問要查詢高雄市的那個地區 
+        line_bot_api.push_message(event.reply_token,content) #ex:高雄市->請問要查詢高雄市的那個地區 
         return 0
     # 1.第四層-請問要查詢高雄市的那個地區->呼叫區鄉鎮選單
     if event.message.text.endswith('地區'):  #if結尾=地區
