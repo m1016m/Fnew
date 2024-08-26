@@ -18,6 +18,7 @@ import stockprice
 #======這裡是呼叫的檔案內容=====
 # 載入 json 標準函式庫，處理回傳的資料格式
 import requests, json, time
+import place
 #======這裡是呼叫的檔案內容=====
 
 app = Flask(__name__)
