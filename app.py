@@ -31,31 +31,18 @@ import yfinance as yf
 import mplfinance as mpf
 import pyimgur
 
-# 地震資訊函式
-def earth_quake():
-    # 預設回傳的訊息
-    msg = ['找不到地震資訊','https://example.com/demo.jpg']
-    try:
-        code = 'CWA-C07BDC7E-7138-4068-BCEC-13C15865812A'#你的氣象資料授權碼
-        url = f'https://opendata.cwb.gov.tw/api/v1/rest/datastore/E-A0015-001?Authorization={code}'
-        # 爬取地震資訊網址
-        e_data = requests.get(url)
-        # json 格式化訊息內容
-        e_data_json = e_data.json()
-        # 取出地震資訊
-        eq = e_data_json['records']['earthquake']
-        for i in eq:
-            loc = i['earthquakeInfo']['epiCenter']['location']       # 地震地點
-            val = i['earthquakeInfo']['magnitude']['magnitudeValue'] # 地震規模
-            dep = i['earthquakeInfo']['depth']['value']              # 地震深度
-            eq_time = i['earthquakeInfo']['originTime']              # 地震時間
-            img = i['reportImageURI']                                # 地震圖
-            msg = [f'{loc}，芮氏規模 {val} 級，深度 {dep} 公里，發生時間 {eq_time}。', img]
-            break     # 取出第一筆資料後就 break
-        return msg    # 回傳 msg
-    except:
-        return msg    # 如果取資料有發生錯誤，直接回傳 msg
-
+# LINE 回傳訊息函式
+def reply_message(msg, rk, token):
+    headers = {'Authorization':f'Bearer {token}','Content-Type':'application/json'}   
+    body = {
+    'replyToken':rk,
+    'messages':[{
+            "type": "text",
+            "text": msg
+        }]
+    }
+    req = requests.request('POST', 'https://api.line.me/v2/bot/message/reply', headers=headers,data=json.dumps(body).encode('utf-8'))
+    print(req.text)
 
 def plot_stock_k_chart(IMGUR_CLIENT_ID, stock="0050", date_from='2020-01-01'):
     """
@@ -576,7 +563,7 @@ def handle_message(event):
     if event.message.text.endswith('即時天氣'): #if結尾=即時天氣
         mat_d[uid]='即時天氣'
         content=place.select_city(mat_d[uid])             #呼叫全台縣市選單-22個
-        line_bot_api.reply_message(event.reply_token,content) #ex:高雄市->請問要查詢高雄市的那個地區
+        line_bot_api.reply_message(event.reply_token,content) #ex:高雄市->請問要查詢高雄市的那個地區 
         return 0
     # 1.第四層-請問要查詢高雄市的那個地區->呼叫區鄉鎮選單
     if event.message.text.endswith('地區'):  #if結尾=地區
