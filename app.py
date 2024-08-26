@@ -153,7 +153,7 @@ def earth_quake():
     msg = ['找不到地震資訊','https://example.com/demo.jpg']
     try:
         code = 'CWA-C07BDC7E-7138-4068-BCEC-13C15865812A'
-        url = f'https://opendata.cwb.gov.tw/api/v1/rest/datastore/E-A0016-001?Authorization={code}'
+        url = f'https://opendata.cwb.gov.tw/api/v1/rest/datastore/E-A0015-001?Authorization={code}'
         # 爬取地震資訊網址
         e_data = requests.get(url)
         # json 格式化訊息內容
@@ -202,7 +202,7 @@ def callback():
                 if text == '雷達回波圖' or text == '雷達回波':
                     # 傳送雷達回波圖 ( 加上時間戳記 )
                     reply_image(f'https://cwbopendata.s3.ap-northeast-1.amazonaws.com/MSC/O-A0058-003.png?{time.time_ns()}', reply_token, access_token)
-                # 如果是地震相關的文字
+                #如果是地震相關的文字
                 elif text == '地震資訊' or text == '地震':
                     # 爬取地震資訊
                     msg = earth_quake()
@@ -590,6 +590,13 @@ def handle_message(event):
         content=place.quick_reply_weather(mat_d[uid])  #呼叫quick_reply
         line_bot_api.reply_message(event.reply_token,content)     #ex:回傳->其它即時天氣
         return 0
+    
+
+
+
+
+
+
     # 1.第三層-其它即時天氣->呼叫縣市選單
     if event.message.text.endswith('即時天氣'): #if結尾=即時天氣
         mat_d[uid]='即時天氣'
