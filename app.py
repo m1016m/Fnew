@@ -183,14 +183,14 @@ def callback():
                 if text == '雷達回波圖' or text == '雷達回波':
                     # 傳送雷達回波圖 ( 加上時間戳記 )
                     reply_image(f'https://cwbopendata.s3.ap-northeast-1.amazonaws.com/MSC/O-A0058-003.png?{time.time_ns()}', reply_token, access_token)
-                # 如果是地震相關的文字
-                elif text == '地震資訊' or text == '地震':
-                    # 爬取地震資訊
-                    msg = earth_quake()
-                    # 傳送地震資訊 ( 用 push 方法，因為 reply 只能用一次 )
-                    push_message(msg[0], user_id, access_token)
-                    # 傳送地震圖片 ( 用 reply 方法 )
-                    reply_image(msg[1], reply_token, access_token)
+                # # 如果是地震相關的文字
+                # elif text == '地震資訊' or text == '地震':
+                #     # 爬取地震資訊
+                #     msg = earth_quake()
+                #     # 傳送地震資訊 ( 用 push 方法，因為 reply 只能用一次 )
+                #     push_message(msg[0], user_id, access_token)
+                #     # 傳送地震圖片 ( 用 reply 方法 )
+                #     reply_image(msg[1], reply_token, access_token)
                 else:
                     # 如果是一般文字，直接回覆同樣的文字
                     reply_message(text, reply_token, access_token)     
