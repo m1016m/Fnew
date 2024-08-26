@@ -56,45 +56,7 @@ def earth_quake():
     except:
         return msg    # 如果取資料有發生錯誤，直接回傳 msg
 
-# LINE push 訊息函式
-def push_message(msg, uid, token):
-    headers = {'Authorization':f'Bearer {token}','Content-Type':'application/json'}   
-    body = {
-    'to':uid,
-    'messages':[{
-            "type": "text",
-            "text": msg
-        }]
-    }
-    req = requests.request('POST', 'https://api.line.me/v2/bot/message/push', headers=headers,data=json.dumps(body).encode('utf-8'))
-    print(req.text)
 
-# LINE 回傳訊息函式
-def reply_message(msg, rk, token):
-    headers = {'Authorization':f'Bearer {token}','Content-Type':'application/json'}
-    body = {
-    'replyToken':rk,
-    'messages':[{
-            "type": "text",
-            "text": msg
-        }]
-    }
-    req = requests.request('POST', 'https://api.line.me/v2/bot/message/reply', headers=headers,data=json.dumps(body).encode('utf-8'))
-    print(req.text)
-
-# LINE 回傳圖片函式
-def reply_image(msg, rk, token):
-    headers = {'Authorization':f'Bearer {token}','Content-Type':'application/json'}
-    body = {
-    'replyToken':rk,
-    'messages':[{
-          'type': 'image',
-          'originalContentUrl': msg,
-          'previewImageUrl': msg
-        }]
-    }
-    req = requests.request('POST', 'https://api.line.me/v2/bot/message/reply', headers=headers,data=json.dumps(body).encode('utf-8'))
-    print(req.text)
 def plot_stock_k_chart(IMGUR_CLIENT_ID, stock="0050", date_from='2020-01-01'):
     """
     進行個股K線繪製，回傳至於雲端圖床的連結。將顯示包含5MA、20MA及量價關係，起始預設自2020-01-01起迄昨日收盤價。
