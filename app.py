@@ -533,7 +533,53 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token,content)
         check_stor()
         return 0
-
+    #######################1.即時天氣-OK#######################
+    # 1.第二層-即時天氣->呼叫quick_reply
+    if re.match('即時天氣|即時氣象',emsg): 
+        mat_d[uid]='即時天氣'
+        content=place.quick_reply_weather(mat_d[uid])  #呼叫quick_reply
+        line_bot_api.reply_message(event.reply_token,content)     #ex:回傳->其它即時天氣
+        return 0
+    # 1.第三層-其它即時天氣->呼叫縣市選單
+    if event.message.text.endswith('即時天氣'): #if結尾=即時天氣
+        mat_d[uid]='即時天氣'
+        content=place.select_city(mat_d[uid])             #呼叫全台縣市選單-22個
+        line_bot_api.reply_message(event.reply_token,content) #ex:高雄市->請問要查詢高雄市的那個地區
+        return 0
+    # 1.第四層-請問要查詢高雄市的那個地區->呼叫區鄉鎮選單
+    if event.message.text.endswith('地區'):  #if結尾=地區
+        mat_d[uid]='即時天氣'
+        city_name=event.message.text[5:8]   #高雄市
+        df=pd.read_csv('./file/district.csv',encoding='big5') #讀取縣市檔.csv
+        #為了計算該縣市有幾個地區，用來選擇呼叫那個區域選單
+        point_list=df[(df['縣市名稱']==city_name)]
+        point_list=list(point_list['區鄉鎮名稱'])
+        p_no=len(point_list) #取出地區數量
+        json_name='./json/select_point_'+str(p_no)+'.json'  #鄉鎮選單
+        select_point=json.load(open(json_name,'r',encoding='utf-8')) #讀取縣市選單-套用json模版的選單
+        num=0
+        #ex:三民區->開始為您查詢即時天氣-高雄市三民區
+        #2-嘉義市、3-新竹市、4-連江縣、6-澎湖縣、金門縣、7-基隆市、12-台北市、宜蘭縣、
+        #13-桃園市、新竹縣、南投縣、花蓮縣、16-臺東縣、18-苗栗縣、嘉義縣、20-雲林縣、26-彰化縣、29-新北市、台中市
+        if p_no<=29: #一頁
+            for i in range(len(select_point['body']['contents'])):  # 2
+                for j in range(len(select_point['body']['contents'][i]['contents'])): # j=0->7,j=1->6
+                    select_point['hero']['contents'][0]['text']=city_name+'地區選單'
+                    select_point['body']['contents'][i]['contents'][j]['action']['label']=point_list[num]
+                    select_point['body']['contents'][i]['contents'][j]['action']['text']='開始為您查詢即時天氣-'+city_name+point_list[num]
+                    num+=1
+            line_bot_api.reply_message(event.reply_token,FlexSendMessage(city_name+'的地區選單',select_point))
+        #33-屏東縣、37-台南市、38-高雄市
+        else:   #輪播
+            for i in range(len(select_point['contents'])): #3
+                for j in range(len(select_point['contents'][i]['body']['contents'])): #3
+                    for k in range(len(select_point['contents'][i]['body']['contents'][j]['contents'])): #6
+                        select_point['contents'][0]['hero']['contents'][0]['text']=city_name+'地區選單'
+                        select_point['contents'][i]['body']['contents'][j]['contents'][k]['action']['label']=point_list[num]
+                        select_point['contents'][i]['body']['contents'][j]['contents'][k]['action']['text']='開始為您查詢即時天氣-'+city_name+point_list[num]
+                        num+=1
+            line_bot_api.reply_message(event.reply_token,FlexSendMessage(city_name+'的地區選單',select_point))
+        return 0
 import os
 if __name__ == "__main__":
     app.run()
