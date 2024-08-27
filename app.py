@@ -590,6 +590,7 @@ def handle_message(event):
             time.sleep(1)
     #＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊CNN＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊#
     if re.match('圖像辨識',msg):
+        msg = event.message.text  # 获取消息文本内容
         # 獲取圖片內容
         message_content = line_bot_api.get_message_content(event.message.id)
         image = Image.open(io.BytesIO(message_content.content))
