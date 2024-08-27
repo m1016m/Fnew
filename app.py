@@ -20,11 +20,12 @@ import stockprice
 import requests, json, time
 import place
 import pandas as pd
-# from tensorflow.keras.models import load_model
-# from PIL import Image
 import numpy as np
 import io
 import os
+from tensorflow.keras.models import load_model
+from PIL import Image
+
 #======這裡是呼叫的檔案內容=====
 
 app = Flask(__name__)
@@ -33,7 +34,19 @@ access_token = 'jIdH9Ta/KYSrc3bfb8HpD5aG9FpRyLU+b0uZZ9/q8ckCjSF0gEaqBd0dlNN375Wo
 channel_secret = '827fe25e726242685799d486978af9cc'
 #暫存用dict
 mat_d={}
+#＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊CNN＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊#
+# 加載你的CNN模型
+model = load_model('mnist_cnn_model.h5')
 
+def preprocess_image(image):
+    image = image.convert('L')
+    image = image.resize((28, 28))
+    image = np.array(image)
+    image = image / 255.0
+    image = np.expand_dims(image, axis=0)
+    image = np.expand_dims(image, axis=-1)
+    return image
+#＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊CNN＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊#
 # 這段主要在畫K線圖
 # pip3 install pyimgur
 import yfinance as yf
@@ -575,7 +588,25 @@ def handle_message(event):
         while True: 
             schedule.run_pending()
             time.sleep(1)
-    
+    #＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊CNN＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊#
+    if re.match('圖像辨識',msg):
+        # 獲取圖片內容
+        message_content = line_bot_api.get_message_content(event.message.id)
+        image = Image.open(io.BytesIO(message_content.content))
+
+        # 預處理圖片
+        image = preprocess_image(image)
+
+        # 執行CNN模型進行預測
+        prediction = model.predict(image)
+        digit = np.argmax(prediction)
+
+        # 回傳預測結果
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=f'預測的數字是: {digit}')
+        )
+    #＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊CNN＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊#
     #＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊weather＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊#
     # 圖文選單
     # 第一層-最新氣象->4格圖片Flex Message
@@ -590,12 +621,6 @@ def handle_message(event):
         content=place.quick_reply_weather(mat_d[uid])  #呼叫quick_reply
         line_bot_api.reply_message(event.reply_token,content)     #ex:回傳->其它即時天氣
         return 0
-    
-
-
-
-
-
 
     # 1.第三層-其它即時天氣->呼叫縣市選單
     if event.message.text.endswith('即時天氣'): #if結尾=即時天氣
