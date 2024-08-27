@@ -229,6 +229,35 @@ def callback():
     except:
         print('error')
     return 'OK'
+# 處理圖片訊息
+def handle_image_message(event):
+    """
+    处理用户上传的图像消息。
+    """
+    # 检查是否为图像消息
+    if event.message.type == 'image':
+        # 获取图片内容
+        message_content = line_bot_api.get_message_content(event.message.id)
+        image = Image.open(io.BytesIO(message_content.content))
+
+        # 预处理图片
+        image = preprocess_image(image)
+
+        # 执行CNN模型进行预测
+        prediction = model.predict(image)
+        digit = np.argmax(prediction)
+
+        # 返回预测结果
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=f'預測的數字是: {digit}')
+        )
+    else:
+        # 如果不是图像消息，提示用户上传图片
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text='請選擇並上傳一張圖片進行辨識。')
+        )
 # 處理訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -589,23 +618,14 @@ def handle_message(event):
             schedule.run_pending()
             time.sleep(1)
     #＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊CNN＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊#
-    if re.match('圖像辨識',msg):
-        msg = event.message.text  # 获取消息文本内容
-        # 獲取圖片內容
-        message_content = line_bot_api.get_message_content(event.message.id)
-        image = Image.open(io.BytesIO(message_content.content))
+      
+    msg = event.message.text  # 获取消息文本内容
 
-        # 預處理圖片
-        image = preprocess_image(image)
-
-        # 執行CNN模型進行預測
-        prediction = model.predict(image)
-        digit = np.argmax(prediction)
-
-        # 回傳預測結果
+    # 如果消息文本为“图像辨识”，引导用户上传图片
+    if re.match('圖像辨識', msg):
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text=f'預測的數字是: {digit}')
+            TextSendMessage(text='請上傳一張圖片進行圖像辨識。')
         )
     #＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊CNN＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊#
     #＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊weather＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊#
