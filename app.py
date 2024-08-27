@@ -37,14 +37,20 @@ mat_d={}
 #＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊CNN＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊#
 # 加載你的CNN模型
 model = load_model('mnist_cnn_model.h5')
+import logging
 
 def preprocess_image(image):
-    image = image.convert('L')
-    image = image.resize((28, 28))
+    """
+    预处理上传的图像，使其符合CNN模型的输入要求。
+    """
+    logging.info("开始预处理图像")
+    image = image.convert('L')  # 转换为灰度图
+    image = image.resize((28, 28))  # 调整尺寸为28x28像素
     image = np.array(image)
-    image = image / 255.0
-    image = np.expand_dims(image, axis=0)
-    image = np.expand_dims(image, axis=-1)
+    image = image / 255.0  # 归一化
+    image = np.expand_dims(image, axis=0)  # 增加批次维度
+    image = np.expand_dims(image, axis=-1)  # 增加通道维度
+    logging.info("图像预处理完成")
     return image
 #＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊CNN＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊#
 # 這段主要在畫K線圖
@@ -229,35 +235,7 @@ def callback():
     except:
         print('error')
     return 'OK'
-# 處理圖片訊息
-def handle_image_message(event):
-    """
-    处理用户上传的图像消息。
-    """
-    # 检查是否为图像消息
-    if event.message.type == 'image':
-        # 获取图片内容
-        message_content = line_bot_api.get_message_content(event.message.id)
-        image = Image.open(io.BytesIO(message_content.content))
 
-        # 预处理图片
-        image = preprocess_image(image)
-
-        # 执行CNN模型进行预测
-        prediction = model.predict(image)
-        digit = np.argmax(prediction)
-
-        # 返回预测结果
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=f'預測的數字是: {digit}')
-        )
-    else:
-        # 如果不是图像消息，提示用户上传图片
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text='請選擇並上傳一張圖片進行辨識。')
-        )
 # 處理訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -683,6 +661,45 @@ def handle_message(event):
                         num+=1
             line_bot_api.reply_message(event.reply_token,FlexSendMessage(city_name+'的地區選單',select_point))
         return 0
+#處理圖片訊息
+def handle_image_message(event):
+    profile = line_bot_api.get_profile(event.source.user_id)
+   
+    usespeak=str(event.message.text) #使用者講的話
+    uid = profile.user_id #使用者ID
+    user_name = profile.display_name #使用者名稱
+    """
+    处理用户上传的图像消息。
+    """
+    # 检查是否为图像消息
+    if event.message.type == 'image':
+        # 获取图片内容
+        message_content = line_bot_api.get_message_content(event.message.id)
+        image = Image.open(io.BytesIO(message_content.content))
+
+        # 预处理图片
+        image = preprocess_image(image)
+
+        # 执行CNN模型进行预测
+        prediction = model.predict(image)
+        digit = np.argmax(prediction)
+
+        # 返回预测结果
+        try:
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f'預測的數字是: {digit}')
+            )
+        except :
+            # 捕获异常并记录日志
+            print(f"Line Bot API 错误: {e}")
+
+    else:
+        # 如果不是图像消息，提示用户上传图片
+        line_bot_api.push_message(
+            uid,  # 你可以从事件的source中获取 userId
+            TextSendMessage(text=f'預測的數字是: {digit}')
+        )
 import os
 if __name__ == "__main__":
     app.run()
